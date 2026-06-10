@@ -13,9 +13,13 @@ class Reservation(models.Model):
         ("completed", "Completed"),
     ]
 
-    table = models.ForeignKey(RestaurantTable)
+    table = models.ForeignKey(RestaurantTable, on_delete=models.SET_NULL, related_name="reservations", null=True)
+    guests = models.PositiveSmallIntegerField()
 
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
 
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="reservations")

@@ -1,11 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 
 class UserManager(BaseUserManager):
-    def create_user(self, phone, password=None **extra_fields):
+    def create_user(self, phone, password=None, **extra_fields):
         if not phone:
-            ValueError("The phone number must be set")
+            raise ValueError("The phone number must be set")
 
         user = self.model(phone=phone, **extra_fields)
 
@@ -18,7 +20,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, phone, password, **extra_fields):
-        extra_fields.setdefault("is_stuff", True)
+        extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("role","admin")
 
@@ -32,7 +34,11 @@ class User(AbstractBaseUser,PermissionsMixin):
                     ("manager", "Manager"), 
                     ("admin", "Admin"), ]
     
-    phone = models.CharField(max_length=20, unique=True)
+    phone = PhoneNumberField(unique=True, 
+                             error_messages={
+        "invalid": "Введите корректный номер телефона",
+        "unique": "Пользователь уже существует"
+        })
     name = models.CharField(max_length=255)
 
     email = models.EmailField(blank=True,null=True)
@@ -52,4 +58,4 @@ class User(AbstractBaseUser,PermissionsMixin):
     REQUIRED_FIELDS = []
 
     def __str__(self): 
-        return self.phone
+        return str(self.phone)

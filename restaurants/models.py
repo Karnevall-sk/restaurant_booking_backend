@@ -7,22 +7,41 @@ class Restaurant(models.Model):
     city = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
 
-    description = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 class RestaurantTable(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="tables")
 
-    number = models.IntegerField()
-    seats = models.PositiveBigIntegerField()
+    name = models.CharField(max_length=100, verbose_name="Название столика")
+    seats = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return f"{self.restaurant.name} - table {self.number}"
+        return f"{self.restaurant.name} - столик {self.name}"
     
     class Meta:
         constraints = [
             models.UniqueConstraint(
-            fields=["restaurant", "number"],
+            fields=["restaurant", "name"],
             name="unique_table_per_restaurant"
             )
         ]
         
+
+class RestaurantWorkingHours(models.Model):
+
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name="working_hours"
+    )
+
+    weekday = models.IntegerField()
+
+    open_time = models.TimeField()
+    close_time = models.TimeField()
