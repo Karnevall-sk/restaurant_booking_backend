@@ -1,10 +1,8 @@
 import factory
-from faker import Faker
 import random
 
 from .models import Restaurant, RestaurantTable
 
-fake = Faker()
 
 class RestaurantFactory(factory.django.DjangoModelFactory):
 
