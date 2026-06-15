@@ -6,60 +6,61 @@ import random
 from restaurants.models import Restaurant
 from reservation.factories import ReservationFactory
 
-slots = [
-    (12, 14),
-    (14, 16),
-    (16, 18),
-    (18, 20),
-    (20, 22),
-]
+def seed_reservations(reservations_count = 300):
 
-occupied = defaultdict(set)
+    slots = [
+        (12, 14),
+        (14, 16),
+        (16, 18),
+        (18, 20),
+        (20, 22),
+    ]
 
-reservations_count = 300
+    occupied = defaultdict(set)
 
-created = 0
-attempts = 0
-max_attempts = reservations_count * 10
+    created = 0
+    attempts = 0
+    max_attempts = reservations_count * 10
 
-while created < reservations_count and attempts < max_attempts:
-    attempts += 1
+    restaurants = list(Restaurant.objects.all())
+    tables_by_restaurant = {
+        restaurant.id: list(restaurant.tables.all()) for restaurant in restaurants
+    }
 
-    restaurant = random.choice(
-        list(Restaurant.objects.all())
-    )
+    while created < reservations_count and attempts < max_attempts:
+        attempts += 1
 
-    table = random.choice(
-        list(restaurant.tables.all())
-    )
+        restaurant = random.choice(restaurants)
 
-    day = timezone.now().date() - timedelta(
-        days=random.randint(0, 60)
-    )
+        table = random.choice(tables_by_restaurant[restaurant.id])
 
-    slot = random.choice(slots)
+        day = timezone.now().date() - timedelta(
+            days=random.randint(0, 60)
+        )
 
-    key = (table.id, day)
+        slot = random.choice(slots)
 
-    if slot in occupied[key]:
-        continue
+        key = (table.id, day)
 
-    start_hour, end_hour = slot
+        if slot in occupied[key]:
+            continue
 
-    start_time = timezone.make_aware(
-        datetime.combine(day, time(start_hour))
-    )
+        start_hour, end_hour = slot
 
-    end_time = timezone.make_aware(
-        datetime.combine(day, time(end_hour))
-    )
+        start_time = timezone.make_aware(
+            datetime.combine(day, time(start_hour))
+        )
 
-    ReservationFactory(
-        restaurant=restaurant,
-        table=table,
-        start_time=start_time,
-        end_time=end_time,
-    )
+        end_time = timezone.make_aware(
+            datetime.combine(day, time(end_hour))
+        )
 
-    occupied[key].add(slot)
-    created += 1
+        ReservationFactory(
+            restaurant=restaurant,
+            table=table,
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        occupied[key].add(slot)
+        created += 1

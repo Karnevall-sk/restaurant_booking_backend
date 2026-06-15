@@ -1,8 +1,6 @@
 import factory
-import random
 
 from .models import Reservation
-from restaurants.models import Restaurant
 
 class ReservationFactory(factory.django.DjangoModelFactory):
 
@@ -10,6 +8,9 @@ class ReservationFactory(factory.django.DjangoModelFactory):
         model = Reservation
     
     guests = factory.Iterator([1, 2, 3, 4, 5, 6])
+
+    customer_name = factory.Faker("name")
+    customer_phone = "+77001234567"
 
     status = factory.Iterator([
         "pending",

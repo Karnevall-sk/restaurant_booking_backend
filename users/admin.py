@@ -1,15 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 from django import forms
 
 from .models import User
-
-class CustomUserCreationForm(UserCreationForm):
-
-    def clean_email(self):
-        raise forms.ValidationError("МОЯ ФОРМА РАБОТАЕТ")
 
 
 @admin.register(User)
@@ -29,7 +23,6 @@ class CustomUserAdmin(UserAdmin):
         "created_at",
     )
 
-    add_form = CustomUserCreationForm
 
     fieldsets = (
         (None, {"fields": ("phone", "password")}),

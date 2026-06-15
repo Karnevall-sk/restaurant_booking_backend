@@ -1,9 +1,9 @@
 from django.db import models
 from restaurants.models import RestaurantTable, Restaurant
 from users.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
-
+from django.core.exceptions import ValidationError
 
 class Reservation(models.Model):
     
@@ -47,12 +47,27 @@ class Reservation(models.Model):
         related_name="reservations")
     
     customer_name = models.CharField(
-        max_length=255
+        max_length=255,
+        default=""
     )
 
     customer_phone = PhoneNumberField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.start_time >= self.end_time:
+            raise ValidationError(
+                "End time must be after start time"
+            )
+
+        if (
+            self.table
+            and self.guests > self.table.seats
+        ):
+            raise ValidationError(
+                "Too many guests for selected table"
+            )
 
     class Meta:
         indexes = [

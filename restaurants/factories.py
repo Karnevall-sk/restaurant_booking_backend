@@ -14,6 +14,15 @@ class RestaurantFactory(factory.django.DjangoModelFactory):
     address = factory.Faker("address")
     description = factory.Faker("text")
 
+    @factory.post_generation
+    def create_tables(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        # Генерируем 10 столиков со своими номерами при создании ресторана
+        for i in range(1, 11):
+            RestaurantTableFactory(restaurant=self, name=f"Table №{i}")
+
 
 
 class RestaurantTableFactory(factory.django.DjangoModelFactory):

@@ -4,7 +4,9 @@ from restaurants.models import Restaurant
 class MenuCategory(models.Model):
     name = models.CharField(max_length=255)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="categories")
-
+    def __str__(self):
+        return self.name
+    
 class MenuItem(models.Model):
     category = models.ForeignKey(MenuCategory, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=255)
