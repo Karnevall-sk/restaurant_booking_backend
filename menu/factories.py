@@ -19,7 +19,7 @@ class MenuItemFactory(factory.django.DjangoModelFactory):
 
     category = factory.SubFactory(MenuCategoryFactory)
     name = factory.Faker("word")
-    description = factory.Faker("text")
+    description = factory.Faker("sentence", nb_words=10)
     price = "12.50"
 
     image = ImageField(color="blue")

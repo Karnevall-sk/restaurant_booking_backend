@@ -22,7 +22,7 @@ class RestaurantTable(models.Model):
     seats = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.name}"
+        return f"{self.name} - restaurant: {self.restaurant_id}"
     
     class Meta:
         constraints = [
