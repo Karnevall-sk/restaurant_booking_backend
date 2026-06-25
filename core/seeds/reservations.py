@@ -4,7 +4,7 @@ from django.utils import timezone
 import random
 
 from restaurants.models import Restaurant
-from reservation.factories import ReservationFactory
+from reservations.factories import ReservationFactory
 
 def seed_reservations(reservations_count = 300):
 

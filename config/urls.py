@@ -8,6 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('restaurants.urls')),
     path('api/v1/', include('menu.urls')),
+    path('api/v1/', include('reservations.urls')),
 ]
 
 if settings.DEBUG:

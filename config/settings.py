@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 
     'restaurants',
     'menu',
-    'reservation',
+    'reservations',
     'users',
 ]
 
@@ -141,3 +141,9 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# REST_FRAMEWORK = {
+#     "DEFAULT_RENDERER_CLASSES": [
+#         "rest_framework.renderers.JSONRenderer",
+#     ]
+# }
