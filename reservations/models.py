@@ -1,9 +1,19 @@
 from django.db import models
+from django.db.models import Func
 from restaurants.models import RestaurantTable, Restaurant
 from users.models import User
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators, RangeBoundary, DateTimeRangeField
+from django.db.models import Q
+
+from datetime import timedelta
+
+class TsTzRange(Func):
+    function = "TSTZRANGE"
+    output_field = DateTimeRangeField()
 
 class Reservation(models.Model):
     
@@ -29,7 +39,7 @@ class Reservation(models.Model):
     )
 
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(editable=False)
 
 
     status = models.CharField(
@@ -54,23 +64,33 @@ class Reservation(models.Model):
     customer_phone = PhoneNumberField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        if self.start_time and self.restaurant_id:
+            duration = self.restaurant.reservation_duration
+            self.end_time = self.start_time + timedelta(minutes=duration)
+        super().save(*args, **kwargs)
 
     def clean(self):
-        if self.start_time >= self.end_time:
-            raise ValidationError(
-                "End time must be after start time"
-            )
 
-        if (
-            self.table
-            and self.guests > self.table.seats
-        ):
-            raise ValidationError(
-                "Too many guests for selected table"
-            )
+        if self.table and self.guests is not None:
+            if self.guests > self.table.seats:
+                raise ValidationError(
+                    "Too many guests for selected table"
+                )
 
     class Meta:
         indexes = [
-            models.Index(fields=["restaurant", "start_time"]),
+        models.Index(fields=["restaurant", "start_time"]),
+        ]
+        constraints = [
+            ExclusionConstraint(
+                name="no_overlapping_reservations",
+                expressions=[
+                    (TsTzRange("start_time", "end_time", RangeBoundary()), RangeOperators.OVERLAPS),
+                    ("table", RangeOperators.EQUAL),
+                ],
+                condition=Q(status__in=["pending", "confirmed"]),
+            )
         ]
 

@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime, time, timedelta
 from django.utils import timezone
 import random
+from django.db import IntegrityError
 
 from restaurants.models import Restaurant
 from reservations.factories import ReservationFactory
@@ -9,11 +10,12 @@ from reservations.factories import ReservationFactory
 def seed_reservations(reservations_count = 300):
 
     slots = [
+        (10,12),
         (12, 14),
         (14, 16),
         (16, 18),
         (18, 20),
-        (20, 22),
+
     ]
 
     occupied = defaultdict(set)
@@ -35,7 +37,7 @@ def seed_reservations(reservations_count = 300):
         table = random.choice(tables_by_restaurant[restaurant.id])
 
         day = timezone.now().date() - timedelta(
-            days=random.randint(0, 60)
+            days=random.randint(0, 10)
         )
 
         slot = random.choice(slots)
@@ -55,12 +57,15 @@ def seed_reservations(reservations_count = 300):
             datetime.combine(day, time(end_hour))
         )
 
-        ReservationFactory(
-            restaurant=restaurant,
-            table=table,
-            start_time=start_time,
-            end_time=end_time,
-        )
+        try:
+            ReservationFactory(
+                restaurant=restaurant,
+                table=table,
+                start_time=start_time,
+                end_time=end_time,
+            )
+        except IntegrityError:
+            continue
 
         occupied[key].add(slot)
         created += 1

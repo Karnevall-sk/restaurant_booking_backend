@@ -6,3 +6,5 @@ class ReservationViewSet(ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
+
+

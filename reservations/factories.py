@@ -15,6 +15,6 @@ class ReservationFactory(factory.django.DjangoModelFactory):
     status = factory.Iterator([
         "pending",
         "confirmed",
-        "completed",
+        "canceled",
     ])
 
