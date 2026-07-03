@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Reservation
+from .services import create_reservation
 
 class ReservationSerializer(serializers.ModelSerializer):
     start_time = serializers.DateTimeField(style={'input_type': 'text'})
@@ -7,3 +8,6 @@ class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
         fields = "__all__"
+
+    def create(self, validated_data):
+        return create_reservation(**validated_data)

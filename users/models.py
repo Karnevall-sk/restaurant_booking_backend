@@ -4,6 +4,9 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from phonenumber_field.modelfields import PhoneNumberField
 
 
+from restaurants.models import Restaurant
+
+
 class UserManager(BaseUserManager):
     def create_user(self, phone, password=None, **extra_fields):
         if not phone:
@@ -30,9 +33,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser,PermissionsMixin):
     
-    ROLE_CHOICES = [ ("customer", "Customer"), 
-                    ("manager", "Manager"), 
-                    ("admin", "Admin"), ]
+    ROLE_CHOICES = [ ("customer", "customer"), 
+                    ("manager", "manager"), 
+                    ("admin", "admin"), ]
     
     phone = PhoneNumberField(unique=True, 
                              error_messages={
@@ -44,6 +47,13 @@ class User(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(blank=True,null=True)
 
     role = models.CharField(max_length=100,choices=ROLE_CHOICES,default="customer")
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.PROTECT,
+        related_name="staff",
+        null=True,
+        blank=True,
+        )
 
     is_active = models.BooleanField(default=True) 
     is_staff = models.BooleanField(default=False) 

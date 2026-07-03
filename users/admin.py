@@ -17,6 +17,7 @@ class CustomUserAdmin(UserAdmin):
         "name",
         "email",
         "role",
+        "restaurant",
         "is_verified",
         "is_staff",
         "is_active",
@@ -26,7 +27,7 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("phone", "password")}),
-        ("Personal info", {"fields": ("name", "email", "role")}),
+        ("Personal info", {"fields": ("name", "email", "role","restaurant")}),
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "is_verified", "groups", "user_permissions")}),
     )
 

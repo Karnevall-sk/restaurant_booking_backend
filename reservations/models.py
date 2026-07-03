@@ -25,7 +25,7 @@ class Reservation(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("confirmed", "Confirmed"),
-        ("cancelled", "Cancelled"),
+        ("canceled", "Canceled"),
         ("completed", "Completed"),
     ]
 
@@ -66,6 +66,11 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def save(self, *args, **kwargs):
+        if self.end_time is None:
+            self.end_time = (
+                self.start_time +
+                timedelta(minutes=self.restaurant.reservation_duration)
+            )
         if self.start_time and self.restaurant_id:
             duration = self.restaurant.reservation_duration
             self.end_time = self.start_time + timedelta(minutes=duration)
