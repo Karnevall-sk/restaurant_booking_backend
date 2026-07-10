@@ -4,7 +4,7 @@ import zoneinfo
 from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError
 from .models import Reservation
-from restaurants.models import Restaurant, RestaurantWorkingHours, RestaurantTable
+from restaurants.models import Restaurant, RestaurantWorkingHours, RestaurantTable, RestaurantClosure
 
 
 
@@ -13,10 +13,12 @@ SLOT_INTERVAL_MINUTES = 30
 
 def create_reservation(**data):
     restaurant = data["restaurant"]
-    if data["table"]:
-        table = data["table"]
-    else:
-        table = find_available_table()
+
+    table = data.get("table") or find_available_table(
+    restaurant=restaurant,
+    start_time=data["start_time"],
+    guests=data["guests"]
+    )
 
     if table.restaurant_id != restaurant.id:
         raise ValidationError(
@@ -35,6 +37,7 @@ def create_reservation(**data):
     )
     
     data["end_time"] = end_time
+   
 
     try:
         return Reservation.objects.create(**data)
@@ -81,7 +84,7 @@ def complete_reservation(
 
 def find_available_table(
         restaurant: Restaurant,
-        start_time: date,
+        start_time: datetime,
         guests: int,
     ):
     end_time = calculate_end_time(restaurant, start_time)
@@ -96,9 +99,9 @@ def find_available_table(
     ).order_by("seats").first()
 
     if table is None:
-        raise ValidationError(
-            "No available table for selected time."
-        )
+        raise ValidationError({
+            "table": "No available table for the selected time."
+        })
 
     return table
 
@@ -117,6 +120,35 @@ def check_table_availability(
         raise ValidationError(
             "Table already reserved"
         )
+
+
+def get_availability(
+    restaurant: Restaurant,
+    target_date: date,
+) -> dict:
+
+    closure = RestaurantClosure.objects.filter(
+        restaurant=restaurant,
+        date=target_date,
+    ).first()
+
+    if closure:
+        return {
+            "date": target_date.isoformat(),
+            "is_closed": True,
+            "closure_reason": closure.reason,
+            "slots": [],
+        }
+
+    slots = get_slots_for_date(restaurant, target_date)
+
+    return {
+        "date": target_date.isoformat(),
+        "is_closed": False,
+        "closure_reason": None,
+        "slots": slots,
+    }
+
 
 def get_slots_for_date(restaurant: Restaurant, target_date: date) -> list[dict]:
 

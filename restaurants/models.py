@@ -95,3 +95,17 @@ class RestaurantWorkingHours(models.Model):
         if self.is_day_off:
             return f"{self.restaurant} — {day_name}: day off"
         return f"{self.restaurant} — {day_name}: {self.open_time:%H:%M}–{self.close_time:%H:%M}"
+    
+
+class RestaurantClosure(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant, 
+        on_delete=models.CASCADE, 
+        related_name="closures"
+    )
+    date = models.DateField(verbose_name="Date")
+    reason = models.CharField(max_length=255, blank=True, verbose_name="Reason")
+
+
+    def __str__(self):
+        return f"{self.restaurant.name} closed on {self.date} ({self.reason or 'No reason'})"

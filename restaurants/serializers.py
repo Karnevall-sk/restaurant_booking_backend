@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Restaurant, RestaurantTable
+from .models import Restaurant, RestaurantTable, RestaurantWorkingHours
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,4 +12,30 @@ class RestaurantTableSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = RestaurantTable
-        fields = ['id','restaurant', 'restaurant_name', 'name', 'seats',]
+        fields = [
+            'id',
+            'restaurant', 
+            'restaurant_name', 
+            'name', 
+            'seats',
+        ]
+
+
+class RestaurantWorkingHoursSerializer(serializers.ModelSerializer):
+    weekday_name = serializers.CharField(
+        source="get_weekday_display",
+        read_only=True
+    )
+
+    class Meta:
+        model = RestaurantWorkingHours
+        fields = [
+            "id",
+            "restaurant",
+            "weekday",
+            "weekday_name",
+            "open_time",
+            "close_time",
+            "is_day_off",
+            "closes_next_day",
+        ]

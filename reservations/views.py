@@ -5,30 +5,42 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.permissions import IsManagerOrAdmin
+from django_filters.rest_framework import DjangoFilterBackend
 
+from core.permissions import IsManagerOrAdmin, CanCancelReservation
+
+from .filters import ReservationFilter
 from .models import Reservation
 from .serializers import ReservationSerializer
+from core.pagination import DefaultPagination
 from reservations.services import create_reservation, confirm_reservation, cancel_reservation, complete_reservation
 
 class ReservationViewSet(ModelViewSet):
-    queryset = Reservation.objects.all()
+    queryset = Reservation.objects.select_related("restaurant", "table", "user").order_by("start_time")
     serializer_class = ReservationSerializer
 
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ReservationFilter
+
+    pagination_class = DefaultPagination
+
+
     def get_queryset(self):
+
+        queryset = self.queryset
         user = self.request.user
         if user.is_anonymous:
-            return Reservation.objects.none()
+            return queryset.none()
 
         if user.role == "admin":
-            return Reservation.objects.all().order_by("id")
+            return queryset.all()
 
         if user.role == "manager":
-            return Reservation.objects.filter(
+            return queryset.filter(
                 restaurant=user.restaurant
             )
 
-        return Reservation.objects.filter(
+        return queryset.filter(
             user=user
         )
 
@@ -54,17 +66,13 @@ class ReservationViewSet(ModelViewSet):
         )
 
     @action(
-        methods=["POST"],
-        detail=True,
-        permission_classes = [IsManagerOrAdmin],
+    methods=["POST"],
+    detail=True,
+    permission_classes=[CanCancelReservation],
     )
-    def cancel(
-        self,
-        request,
-        pk=None
-    ):
-        reservation = self.get_object()
+    def cancel(self, request, pk=None):
 
+        reservation = self.get_object()
         cancel_reservation(reservation)
 
         return Response(
@@ -87,9 +95,12 @@ class ReservationViewSet(ModelViewSet):
         complete_reservation(reservation)
 
         return Response(
-            
+            ReservationSerializer(reservation).data,
             status=status.HTTP_200_OK,
         )
+    
+
+    
 
 
 

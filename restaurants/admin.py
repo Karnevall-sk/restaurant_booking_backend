@@ -13,3 +13,7 @@ class RestaurantTableAdmin(admin.ModelAdmin):
 @admin.register(RestaurantWorkingHours)
 class RestaurantWorkingHoursAdmin(admin.ModelAdmin):
     list_display = [f.name for f in RestaurantWorkingHours._meta.fields]
+
+@admin.register(RestaurantClosure)
+class RestaurantClosuresAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in RestaurantClosure._meta.fields]
