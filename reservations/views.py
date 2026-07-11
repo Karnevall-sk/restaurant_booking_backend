@@ -16,7 +16,7 @@ from core.pagination import DefaultPagination
 from reservations.services import create_reservation, confirm_reservation, cancel_reservation, complete_reservation
 
 class ReservationViewSet(ModelViewSet):
-    queryset = Reservation.objects.select_related("restaurant", "table", "user").order_by("start_time")
+    queryset = Reservation.objects.select_related("restaurant", "table", "user").order_by("-start_time")
     serializer_class = ReservationSerializer
 
     filter_backends = [DjangoFilterBackend]

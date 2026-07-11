@@ -24,6 +24,7 @@ def create_reservation(**data):
         raise ValidationError(
             "Table does not belong to restaurant."
         )
+    data["table"] = table
 
     end_time = calculate_end_time(
         restaurant=restaurant,
