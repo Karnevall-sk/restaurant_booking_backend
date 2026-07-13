@@ -13,11 +13,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('restaurants.urls')),
     path('api/v1/', include('menu.urls')),
     path('api/v1/', include('reservations.urls')),
+    path('api/v1/', include('users.urls')),
 
     path(
         "api/v1/token/",

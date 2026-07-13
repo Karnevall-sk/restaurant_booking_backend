@@ -10,6 +10,9 @@ from .serializers import *
 from core.permissions import CanManageRestaurant
 import datetime
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+
 from menu.serializers import MenuCategorySerializer
 from reservations.services import get_availability
 
@@ -43,6 +46,16 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     # api/v1/availability
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="date",
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description="Reservation date"
+            )
+        ]
+    )
     @action(
         detail=True,
         methods=["get"],
