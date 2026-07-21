@@ -11,6 +11,7 @@ from django.db.models import Q
 
 from datetime import timedelta
 
+
 class TsTzRange(Func):
     function = "TSTZRANGE"
     output_field = DateTimeRangeField()
@@ -32,14 +33,16 @@ class Reservation(models.Model):
     table = models.ForeignKey(
         RestaurantTable, 
         on_delete=models.SET_NULL, 
-        related_name="reservations", null=True)
+        related_name="reservations", 
+        null=True,
+        blank=True)
     
     guests = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1),]
     )
 
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField(editable=False)
+    end_time = models.DateTimeField(blank=True)
 
 
     status = models.CharField(

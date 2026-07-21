@@ -35,15 +35,23 @@ class UserViewSet(GenericViewSet):
         serializer.save()
 
         return Response(MeSerializer(request.user).data)
-
-
-class UserReservationsViewSet(ModelViewSet):
-
-    permission_classes = [IsAuthenticated]
-    serializer_class = ReservationSerializer
-    def get_queryset(self):
-            
-        return  Reservation.objects.filter(
-            user = self.request.user
+    
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="me/reservations"
+    )
+    def user_reservations(self, request):
+        reservations = Reservation.objects.select_related(
+            "restaurant",
+            "table",
+        ).filter(
+            user = request.user
+        ).order_by("-start_time")
+        serializer = ReservationSerializer(
+            reservations,
+            many=True
         )
-        
+        return Response(serializer.data)
+
+

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
 
 from core.permissions import IsManagerOrAdmin, CanCancelReservation
 
@@ -24,13 +25,12 @@ class ReservationViewSet(ModelViewSet):
 
     pagination_class = DefaultPagination
 
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
 
         queryset = self.queryset
         user = self.request.user
-        if user.is_anonymous:
-            return queryset.none()
 
         if user.role == "admin":
             return queryset.all()

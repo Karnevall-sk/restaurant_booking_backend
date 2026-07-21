@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Restaurant, RestaurantTable, RestaurantWorkingHours, RestaurantClosure
@@ -129,10 +130,12 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action == "working_hours" and self.request.method == "GET":
-            return [CanManageRestaurant()]
+            return [AllowAny()]
         if self.action == "working_hours" and self.request.method == "PATCH":
             return [CanManageRestaurant()]
-        return super().get_permissions()
+        if self.request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return [AllowAny()]
+        return [CanManageRestaurant()]
         
 
 class RestaurantTableViewSet(viewsets.ModelViewSet):

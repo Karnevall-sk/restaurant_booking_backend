@@ -55,10 +55,16 @@ class IsManagerOrAdmin(BasePermission):
 
 class CanManageRestaurant(BasePermission):
 
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        return request.user.role in ["admin", "manager"]
+
     def has_object_permission(self, request, view, obj):
+        if not request.user.is_authenticated:
+            return False
         if request.user.role == "admin":
             return True
-
         return (
             request.user.role == "manager"
             and obj == request.user.restaurant

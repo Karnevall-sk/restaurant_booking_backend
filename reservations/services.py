@@ -54,30 +54,30 @@ def create_reservation(**data):
 def confirm_reservation(
         reservation: Reservation
 ):
-    if reservation.status == "Canceled":
+    if reservation.status == "canceled":
         raise ValidationError("Reservations was canceled")
-    reservation.status = "Confirm"
+    reservation.status = "confirmed"
     reservation.save(update_fields=["status"])
 
 def cancel_reservation(
         reservation: Reservation
 ):
-    if reservation.status == "Canceled":
+    if reservation.status == "canceled":
         raise ValidationError("Already canceled")
-    if reservation.status == "Completed":
-        raise ValidationError("Completed reservation cannot be cancelled")
-    reservation.status = "Canceled"
+    if reservation.status == "completed":
+        raise ValidationError("Completed reservation cannot be canceled")
+    reservation.status = "canceled"
     reservation.save(update_fields=["status"])
 
 
 def complete_reservation(
         reservation: Reservation
 ):
-    if reservation.status == "Canceled":
-        raise ValidationError("Canceled reservation cannot be cancelled")
-    if reservation.status == "Completed":
+    if reservation.status == "canceled":
+        raise ValidationError("Canceled reservation cannot be canceled")
+    if reservation.status == "completed":
         raise ValidationError("Already completed")
-    reservation.status = "Completed"
+    reservation.status = "completed"
     reservation.save(update_fields=["status"])
 
 
@@ -119,7 +119,7 @@ def check_table_availability(
 
     if exists:
         raise ValidationError(
-            "Table already reserved"
+            "Table already reserved."
         )
 
 

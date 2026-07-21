@@ -59,8 +59,8 @@ class RestaurantWorkingHours(models.Model):
 
     weekday = models.IntegerField(choices=WEEKDAYS)
 
-    open_time = models.TimeField()
-    close_time = models.TimeField()
+    open_time = models.TimeField(null=True, blank=True)
+    close_time = models.TimeField(null=True, blank=True)    
 
     is_day_off = models.BooleanField(default=False)
     # if working after 00:00

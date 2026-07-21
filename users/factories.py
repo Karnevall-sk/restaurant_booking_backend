@@ -6,6 +6,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = User
+        skip_postgeneration_save = True
 
     phone = factory.Sequence(
         lambda n: f"+7700{n:07d}"
