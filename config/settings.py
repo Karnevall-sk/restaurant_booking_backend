@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379/1",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/1",
         "KEY_PREFIX": "restaurant_booking",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
