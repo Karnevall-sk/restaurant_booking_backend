@@ -1,10 +1,15 @@
 import pytest
 from rest_framework.test import APIClient
+from django.core.cache import cache
 
 from restaurants.factories import RestaurantFactory
 from reservations.factories import ReservationFactory
 from users.factories import UserFactory
 
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 # api client
 @pytest.fixture

@@ -4,11 +4,18 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny
+
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import Restaurant, RestaurantTable, RestaurantWorkingHours, RestaurantClosure
 from .serializers import *
 from core.permissions import CanManageRestaurant
+from .cache import (
+    restaurant_list_cache,
+    restaurant_menu_cache
+)
+
 import datetime
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -28,23 +35,47 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
     }
 
-    # api/v1/menu
+    def list(self, request, *args, **kwargs):
+
+        if request.query_params:
+            return super().list(request, *args, **kwargs)
+
+
+        data = restaurant_list_cache.get_or_set(
+            fetch_func=lambda: super(RestaurantViewSet, self).list(request, *args, **kwargs).data
+        )
+        return Response(data)
+
+    def perform_create(self, serializer):
+        restaurant = serializer.save()
+        restaurant_list_cache.invalidate()
+
+    def perform_update(self, serializer):
+        restaurant = serializer.save()
+        restaurant_list_cache.invalidate()
+
+    def perform_destroy(self, instance):
+        instance.delete()   
+        restaurant_list_cache.invalidate()
+
+    # /api/v1/restaurants/id/menu/
     @action(
         detail=True, 
         methods=["get"],
         url_path="menu")
     def menu(self, request, pk=None):
 
-        restaurant = self.get_object()
+        def fetch_menu():
+            restaurant = self.get_object()
+            categories = restaurant.categories.prefetch_related("menu_items")
+            return MenuCategorySerializer(categories, many=True).data
 
-        categories = restaurant.categories.prefetch_related("menu_items")
-
-        serializer = MenuCategorySerializer(
-            categories,
-            many = True
+        data = restaurant_menu_cache.get_or_set(
+            fetch_func=fetch_menu,
+            restaurant_id=pk
         )
 
-        return Response(serializer.data)
+        return Response(data)
     
     # api/v1/availability
     @extend_schema(
@@ -127,6 +158,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         return Response(serializer.data)
+
     
     def get_permissions(self):
         if self.action == "working_hours" and self.request.method == "GET":

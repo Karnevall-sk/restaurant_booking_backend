@@ -7,10 +7,25 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from .models import MenuCategory, MenuItem
 from .serializers import MenuItemSerializer, MenuCategorySerializer
 
+from restaurants.cache import restaurant_menu_cache
+
 class MenuCategoryViewSet(viewsets.ModelViewSet):
     queryset = MenuCategory.objects.prefetch_related(
         'menu_items')
     serializer_class = MenuCategorySerializer
+
+    def perform_create(self, serializer):
+        category = serializer.save()
+        restaurant_menu_cache.invalidate(restaurant_id=category.restaurant_id)
+    
+    def perform_update(self, serializer):
+        category = serializer.save()
+        restaurant_menu_cache.invalidate(restaurant_id=category.restaurant_id)
+    
+    def perform_destroy(self, instance):
+        restaurant_id = instance.restaurant_id
+        instance.delete()
+        restaurant_menu_cache.invalidate(restaurant_id=restaurant_id)
 
 
 
@@ -43,4 +58,17 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 
     
     ordering_fields = ["price", "name"]
+
+    def perform_create(self, serializer):
+        item = serializer.save()
+        restaurant_menu_cache.invalidate(restaurant_id=item.category.restaurant_id)
+    
+    def perform_update(self, serializer):
+        item = serializer.save()
+        restaurant_menu_cache.invalidate(restaurant_id=item.category.restaurant_id)
+    
+    def perform_destroy(self, instance):
+        restaurant_id = instance.category.restaurant_id
+        instance.delete()   
+        restaurant_menu_cache.invalidate(restaurant_id=restaurant_id)
 

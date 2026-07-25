@@ -15,6 +15,7 @@ class ReservationSerializer(serializers.ModelSerializer):
             "status",
             "end_time",
             "created_at",
+            
         )
 
     def create(self, validated_data):
