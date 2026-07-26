@@ -13,7 +13,8 @@ from .serializers import *
 from core.permissions import CanManageRestaurant
 from .cache import (
     restaurant_list_cache,
-    restaurant_menu_cache
+    restaurant_menu_cache,
+    restaurant_availability_cache
 )
 
 import datetime
@@ -95,9 +96,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     )
     def availability(self, request, pk):
 
-        restaurant = self.get_object()
         date_str = request.query_params.get("date")
-
         if not date_str:
             return Response(
                 {"detail": "Query parameter 'date' is required (YYYY-MM-DD)."},
@@ -111,13 +110,21 @@ class RestaurantViewSet(viewsets.ModelViewSet):
                 {"detail": "Invalid date format. Use YYYY-MM-DD."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        def fetch_availability():
+            restaurant = self.get_object()
+            availability = get_availability(
+                restaurant,
+                target_date,)
+            return availability
         
-        availability = get_availability(
-            restaurant,
-            target_date,
+        data = restaurant_availability_cache.get_or_set(
+            fetch_func=fetch_availability,
+            restaurant_id=pk,
+            date=target_date
         )
 
-        return Response(availability)
+        return Response(data)
     
     @action(
         detail=True,
