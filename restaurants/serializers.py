@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Restaurant, RestaurantTable, RestaurantWorkingHours
+from .models import Restaurant, RestaurantTable, RestaurantWorkingHours, RestaurantClosure
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,3 +39,8 @@ class RestaurantWorkingHoursSerializer(serializers.ModelSerializer):
             "is_day_off",
             "closes_next_day",
         ]
+
+class RestaurantClosureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RestaurantClosure
+        fields = "__all__"

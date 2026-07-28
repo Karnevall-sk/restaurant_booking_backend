@@ -49,12 +49,15 @@ class ReservationViewSet(ModelViewSet):
     def perform_create(self, serializer):
         reservation = serializer.save()
         restaurant_availability_cache.invalidate(restaurant_id=reservation.restaurant_id,date=reservation.start_time.strftime("%Y-%m-%d"),)
-
     def perform_update(self, serializer):
         reservation = serializer.save()
         restaurant_availability_cache.invalidate(restaurant_id=reservation.restaurant_id,date=reservation.start_time.strftime("%Y-%m-%d"),)
+    def perform_destroy(self, instance):
+        reservation = instance.restaurant_id
+        restaurant_availability_cache.invalidate(restaurant_id=reservation.restaurant_id,date=reservation.start_time.strftime("%Y-%m-%d"),)
+        instance.delete()   
+        
 
-    
     @action(
         methods=["POST"],
         detail=True,
@@ -68,7 +71,6 @@ class ReservationViewSet(ModelViewSet):
     ):
 
         reservation = self.get_object()
-
         confirm_reservation(reservation)
 
         return Response(
@@ -85,7 +87,8 @@ class ReservationViewSet(ModelViewSet):
 
         reservation = self.get_object()
         cancel_reservation(reservation)
-
+        restaurant_availability_cache.invalidate(restaurant_id=reservation.restaurant_id,date=reservation.start_time.strftime("%Y-%m-%d"),)
+        
         return Response(
             ReservationSerializer(reservation).data,
             status=status.HTTP_200_OK,

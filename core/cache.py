@@ -19,6 +19,10 @@ class CacheNamespace:
         print("aboba")
         cache.delete(self._make_key(**kwargs))
 
+    def invalidate_pattern(self, **kwargs):
+        pattern = self._make_key(**kwargs)
+        cache.delete_pattern(f"{pattern}*")
+
     def get_or_set(self, fetch_func, **kwargs):
         key = self._make_key(**kwargs)
         data = cache.get(key)

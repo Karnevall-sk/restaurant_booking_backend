@@ -164,6 +164,10 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        restaurant_availability_cache.invalidate_pattern(
+            restaurant_id=restaurant.id,
+            )
+
         return Response(serializer.data)
 
     
@@ -183,5 +187,49 @@ class RestaurantTableViewSet(viewsets.ModelViewSet):
     serializer_class = RestaurantTableSerializer
 
 
+class RestaurantClosureViewSet(viewsets.ModelViewSet):
+    queryset = RestaurantClosure.objects.select_related("restaurant")
+    serializer_class = RestaurantClosureSerializer
 
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "restaurant": ["exact"],
+        "date": ["exact", "gte", "lte"],
+    }
+
+    permission_classes = [CanManageRestaurant]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if user.role == "admin":
+            return queryset
+
+        return queryset.filter(
+            restaurant=user.restaurant
+        )
+
+    def perform_create(self, serializer):
+        closure = serializer.save()
+
+        restaurant_availability_cache.invalidate_pattern(
+            restaurant_id=closure.restaurant_id
+        )
+
+    def perform_update(self, serializer):
+        closure = serializer.save()
+
+        restaurant_availability_cache.invalidate_pattern(
+            restaurant_id=closure.restaurant_id
+        )
+
+    def perform_destroy(self, instance):
+        restaurant_id = instance.restaurant_id
+
+        instance.delete()
+
+        restaurant_availability_cache.invalidate_pattern(
+            restaurant_id=restaurant_id
+        )
     
